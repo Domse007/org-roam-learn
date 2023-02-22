@@ -1,4 +1,4 @@
-#+html: <h1 align="center">org-roam-learn<h1>
+#+html: <h1 align="center">org-roam-learn</h1>
 
 =org-roam-learn= chooses a random node and hides the buffer and only
 shows the heading. With a keybinding, the content can be uncovered.
