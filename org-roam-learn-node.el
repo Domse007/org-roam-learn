@@ -1,22 +1,32 @@
 (require 'cl-macs)
 
-(defclass org-roam-learn-node nil
-  (id :initarg :id :reader org-roam-learn-node-get-id)
-  (tags :initarg :tags :reader org-roam-learn-node-get-tags)
-  (repetitions :reader org-roam-learn-node-get-repetitions
-               :accessor org-roam-learn-node-set-repetitions)
-  (certainty :reader org-roam-learn-node-get-certainty
-             :accessor org-roam-learn-node-set-certainty))
+(cl-defstruct org-roam-learn-node
+  (id nil :read-only t :type 'string)
+  (tags nil :read-only t :type 'list)
+  (repetitions 0 :read-only nil :type 'number)
+  (certainty 0 :read-only nil :type 'number))
 
-(defun org-roam-learn-node-new (id tags)
-  (let ((node (org-roam-learn-node :name name :tags tags)))
-    (org-roam-learn-node-set-repetitions 0)
-    (org-roam-learn-node-set-certainty 0.)
-    node))
+(defun org-roam-learn-node-certainty-inc (node cert)
+  "Increment the certainty of NODE by CERT."
+  (cl-assert (org-roam-learn-node-p node))
+  (setf (org-roam-learn-node-certainty node)
+        (+ (org-roam-learn-node-certainty node) cert)))
+
+(defun org-roam-learn-node-certainty-dec (node cert)
+  "Decrement the certainty of NODE by CERT."
+  (cl-assert (org-roam-learn-node-p node))
+  (setf (org-roam-learn-node-certainty node)
+        (- (org-roam-learn-node-certainty node) cert)))
+
+(defun org-roam-learn-node-repetitions-inc (node)
+  "Increment the number of times NODE was learned."
+  (cl-assert (org-roam-learn-node-p node))
+  (setf (org-roam-learn-node-repetitions node)
+        (1+ (org-roam-learn-node-repetitions node))))
 
 (defun org-roam-learn-node-stringify-tags (node)
   "Get the tags of NODE and return one string."
   (cl-assert (org-roam-learn-node-p node))
-  (mapconcat #'identity (org-roam-learn-get-tags node) ":"))
+  (mapconcat #'identity (org-roam-learn-node-tags node) ":"))
 
 (provide 'org-roam-learn-node)
