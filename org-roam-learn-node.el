@@ -24,9 +24,8 @@
   (setf (org-roam-learn-node-repetitions node)
         (1+ (org-roam-learn-node-repetitions node))))
 
-(defun org-roam-learn-node-stringify-tags (node)
+(defun org-roam-learn-node-stringify-tags (tags)
   "Get the tags of NODE and return one string."
-  (cl-assert (org-roam-learn-node-p node))
-  (mapconcat #'identity (org-roam-learn-node-tags node) ":"))
+  (mapconcat #'identity tags ":"))
 
 (provide 'org-roam-learn-node)

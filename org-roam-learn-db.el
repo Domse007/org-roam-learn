@@ -11,10 +11,10 @@
 (defvar org-roam-learn--db nil)
 
 (defconst org-roam-learn--default-schema
-  [:create-table entries ([(id string :primary-key :unique)
-			   (tags string)
+  [:create-table entries ([(id text :primary-key :unique)
+			   (tags text)
 			   (repetitions integer)
-			   (certainty float)])]
+			   (certainty integer)])]
   "The schema used in the db. This should match the org-roam-learn-node class")
 
 (defun org-roam-learn-db-init ()
@@ -28,15 +28,14 @@
 
 (defun org-roam-learn-db-insert (node)
   "Insert NODE into the db. NODE must be of type org-roam-learn-node."
-  (cl-assert (org-roam-learn-node-p node))
-  (cl-assert org-roam-learn--db)
-  (emacsql org-roam-learn--db
-	   [:insert :into entries
-		    :values ([,(org-roam-learn-node-get-id node)
-			      ,(org-roam-learn-node-stringify-tags
-				(org-roam-learn-node-get-tags node))
-			      ,(org-roam-learn-node-get-repetitions node)
-			      ,(org-roam-learn-node-get-certainty node)])]))
+  (cl-assert (and (org-roam-learn-node-p node) org-roam-learn--db))
+  (let ((id (org-roam-learn-node-id node))
+	(tags (org-roam-learn-node-stringify-tags
+	       (org-roam-learn-node-tags node)))
+	(repetitions (org-roam-learn-node-repetitions node))
+	(certainty (org-roam-learn-node-certainty node)))
+    (emacsql org-roam-learn--db [:insert :into entries :values $v1]
+	     (vector id tags repetitions certainty))))
 
 (defun org-roam-learn-db-get-entries (tags-constraint
 				      repetitions-constraint
@@ -59,7 +58,8 @@ CONSTRAINT-FN takes the parameters tags, repetitions and certainty."
 (defun org-roam-learn-db-get-defined-tags ()
   "Get all tags that are registerd in the db."
   (cl-assert org-roam-learn--db)
-  (let ((tags (emacsql org-roam-learn--db [:select [tags] :from entries])))
-    (split-string tags ":")))
+  (let* ((tags (emacsql org-roam-learn--db [:select [tags] :from entries]))
+	 (actual-tags (car (nth 2 tags))))
+    (split-string actual-tags ":")))
 
 (provide 'org-roam-learn-db)

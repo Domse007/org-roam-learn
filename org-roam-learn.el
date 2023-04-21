@@ -5,10 +5,9 @@
 (require 'org-roam)
 
 (defgroup org-roam-learn nil
-  "An extension to org-roam to learn nodes."
-  :lighter " orl")
+  "An extension to org-roam to learn nodes.")
 
-(defcustom org-roam-learn-selector (lambda (l) (seq-random-elt))
+(defcustom org-roam-learn-selector (lambda (l) (seq-random-elt l))
   "The function that decides which node should be opened. It takes a list of
 org-roam-learn-node and must return one of them as the result."
   :type 'function)
@@ -20,11 +19,14 @@ org-roam-learn-node and must return one of them as the result."
   (org-roam-learn-db-init))
 
 (defun org-roam-learn-add ()
+  "Interactively add a node to org-roam-learn."
   (interactive)
   (let* ((nodes (org-roam-node-list))
-	 (selected (completing-read "Node: " nodes nil t))
-	 (node (org-roam-learn-node-new (org-roam-node-file selected)
-					(org-roam-node-tags selected))))
+	 (node-names (mapcar #'org-roam-node-title nodes))
+	 (selected (completing-read "Node: " node-names nil t))
+	 (queried-node (org-roam-node-from-title-or-alias selected))
+	 (node (make-org-roam-learn-node :id (org-roam-node-id queried-node)
+					 :tags (org-roam-node-tags queried-node))))
     (org-roam-learn-db-insert node)))
 
 (defun org-roam-learn-learn ()
