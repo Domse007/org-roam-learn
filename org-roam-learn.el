@@ -1,3 +1,5 @@
+(require 'cl-macs)
+
 (require 'org-roam-learn-node)
 (require 'org-roam-learn-db)
 
@@ -17,6 +19,13 @@ org-roam-learn-node and must return one of them as the result."
 
 (defun org-roam-learn-init ()
   (org-roam-learn-db-init))
+
+(defun org-roam-learn-exit ()
+  "Close the connection to the db."
+  (interactive)
+  (cl-assert org-roam-learn--db)
+  (emacsql-close org-roam-learn--db)
+  (setq org-roam-learn--db))
 
 (defun org-roam-learn-add ()
   "Interactively add a node to org-roam-learn."
