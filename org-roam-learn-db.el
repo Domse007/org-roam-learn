@@ -38,25 +38,13 @@
     (emacsql org-roam-learn--db [:insert :into entries :values $v1]
 	     (vector id tags repetitions certainty))))
 
-(defun org-roam-learn-db-get-entries (tags-constraint
-				      repetitions-constraint
-				      certainty-constraint)
-  "Get a list of entries where CONSTRAINT-FN returns t. The function
-CONSTRAINT-FN takes the parameters tags, repetitions and certainty."
-  (cl-assert org-roam-learn--db)
-  (emacsql org-roam-learn--db
-	   [:select [id repetitions] :from entries
-		    :where (and (string-search tags-constraint tags)
-				(>= repetitions-constraint repetitions)
-				(>= certainty-constraint certainty))]))
-
 (defun org-roam-learn-db-get-entries-where-tag (tag-constraint)
   (cl-assert org-roam-learn--db)
   (message "constr: %s" (format "%%%s%%" tag-constraint))
   (let* ((result (emacsql org-roam-learn--db
 			  [:select [id tags repetitions certainty]
 				   :from entries ]))
-	 ; Ver hacky... Should be a constraint in the query, but oh well...
+	 ;; Very hacky... Should be a constraint in the query, but oh well...
 	 (filtered (-filter (lambda (e)
 			      (when (string-match tag-constraint (nth 1 e))
 				e))
