@@ -51,9 +51,10 @@ org-roam-learn-node and must return one of them as the result."
 (defun org-roam-learn-next ()
   (interactive)
   (if org-roam-learn--last-tag
-      (let ((queried (org-roam-learn-db-get-entries-where-tag selected-tag))
-	    (calculated (apply org-roam-learn-selector queried)))
-	(org-roam-id-open (org-roam-learn-node-get-id calculated)))
+      (let* ((queried (org-roam-learn-db-get-entries-where-tag
+		       org-roam-learn--last-tag))
+	     (calculated (funcall org-roam-learn-selector queried)))
+	(org-roam-id-open (org-roam-learn-node-id calculated) nil))
     (error "There was no previous tag selected")))
 
 (provide 'org-roam-learn)
