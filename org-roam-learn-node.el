@@ -28,4 +28,8 @@
   "Get the tags of NODE and return one string."
   (mapconcat #'identity tags ":"))
 
+(defun org-roam-learn-node-unstring-tags (s)
+  "Take a stringified tags list and return a list."
+  (unless (string-equal s "") (split-string s ":")))
+
 (provide 'org-roam-learn-node)

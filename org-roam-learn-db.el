@@ -1,5 +1,6 @@
 (require 'emacsql)
 (require 'emacsql-sqlite)
+(require 'dash)
 (require 'cl-macs)
 (require 'org-roam-learn-node)
 
@@ -51,15 +52,32 @@ CONSTRAINT-FN takes the parameters tags, repetitions and certainty."
 
 (defun org-roam-learn-db-get-entries-where-tag (tag-constraint)
   (cl-assert org-roam-learn--db)
-  (emacsql org-roam-learn--db
-	   [:select [id repetitions certainty] :from entries
-		    :where (string-search tag-constraint tags)]))
+  (message "constr: %s" (format "%%%s%%" tag-constraint))
+  (let* ((result (emacsql org-roam-learn--db
+			  [:select [id tags repetitions certainty]
+				   :from entries ]))
+	 ; Ver hacky... Should be a constraint in the query, but oh well...
+	 (filtered (-filter (lambda (e)
+			      (when (string-match tag-constraint (nth 1 e))
+				e))
+			    result)))
+    (mapcar (lambda (l) (make-org-roam-learn-node
+			 :id (nth 0 l)
+			 :tags (org-roam-learn-node-unstring-tags (nth 1 l))
+			 :repetitions (nth 2 l)
+			 :certainty (nth 3 l)))
+	    filtered)))
 
 (defun org-roam-learn-db-get-defined-tags ()
   "Get all tags that are registerd in the db."
   (cl-assert org-roam-learn--db)
   (let* ((tags (emacsql org-roam-learn--db [:select [tags] :from entries]))
-	 (actual-tags (car (nth 2 tags))))
-    (split-string actual-tags ":")))
+	 (splitten (mapcar (lambda (i) (let ((c (car i)))
+					 (org-roam-learn-node-unstring-tags c)))
+			   tags))
+	 (flatten (-flatten splitten))
+	 (non-nil (-non-nil flatten))
+	 (distinct (-distinct non-nil)))
+    distinct))
 
 (provide 'org-roam-learn-db)

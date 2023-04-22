@@ -43,9 +43,10 @@ org-roam-learn-node and must return one of them as the result."
   (let* ((tags (org-roam-learn-db-get-defined-tags))
 	 (selected-tag (completing-read "Tag: " tags nil t))
 	 (queried (org-roam-learn-db-get-entries-where-tag selected-tag))
-	 (calculated (apply org-roam-learn-selector queried)))
-    (setq org-roam-learn--last-tag calculated)
-    (org-roam-id-open (org-roam-learn-node-get-id node))))
+	 (calculated (funcall org-roam-learn-selector queried)))
+    (cl-assert (org-roam-learn-node-p calculated))
+    (setq org-roam-learn--last-tag selected-tag)
+    (org-roam-id-open (org-roam-learn-node-id calculated) nil)))
 
 (defun org-roam-learn-next ()
   (interactive)
